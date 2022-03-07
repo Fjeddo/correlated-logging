@@ -1,0 +1,15 @@
+{
+  "version": "2.0",
+  "logging": {
+    "logLevel": {
+      "FunctionApp3": "Information",
+      "CorrelatedLogger": "Information"
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    }
+  }
+}
