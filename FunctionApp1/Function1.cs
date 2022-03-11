@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FunctionApp1
 {
-    public class Function1 : HttpTriggeredFunctions<Function1>
+    public class Function1 : LogCorrelatedFunctions<Function1>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly Configuration _configuration;
@@ -38,7 +38,7 @@ namespace FunctionApp1
 
                 var requestTo2 = new HttpRequestMessage(HttpMethod.Get, _configuration.Function2Url)
                 {
-                    Headers = {{HttpRequestExtensions.Header, req.GetCorrelationId()}}
+                    Headers = {{ContextExtensions.Header, req.GetCorrelationId()}}
                 };
 
                 var response = await httpClient.SendAsync(requestTo2);

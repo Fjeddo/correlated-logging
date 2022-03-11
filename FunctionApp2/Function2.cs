@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FunctionApp2
 {
-    public class Function2 : HttpTriggeredFunctions<Function2>
+    public class Function2 : LogCorrelatedFunctions<Function2>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly Configuration _configuration;
@@ -28,7 +28,7 @@ namespace FunctionApp2
 
                 var httpClient = _httpClientFactory.CreateClient();
                 var requestTo3 = new HttpRequestMessage(HttpMethod.Get, _configuration.Function3Url)
-                    {Headers = {{HttpRequestExtensions.Header, req.GetCorrelationId() } }};
+                    {Headers = {{ContextExtensions.Header, req.GetCorrelationId() } }};
                 var response = await httpClient.SendAsync(requestTo3);
 
                 Log.LogInformation("Did a get request to Function 3");
