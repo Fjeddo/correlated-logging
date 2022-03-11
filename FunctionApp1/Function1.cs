@@ -1,50 +1,56 @@
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using CorrelatedLogger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FunctionApp1
 {
-    public class Function1
+    public class Function1 : HttpTriggeredFunctions<Function1>
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IExtendedLogger<Function1> _log;
-        private readonly ICorrelationIdProvider _correlationIdProvider;
         private readonly Configuration _configuration;
 
-        public Function1(IHttpClientFactory httpClientFactory, IExtendedLogger<Function1> log, ICorrelationIdProvider correlationIdProvider, IConfiguration configuration)
+        public Function1(IHttpClientFactory httpClientFactory, ICorrelationIdDecoratedLogger<Function1> log, IConfiguration configuration) : base(log)
         {
             _httpClientFactory = httpClientFactory;
-            _log = log;
-            _correlationIdProvider = correlationIdProvider;
             _configuration = configuration.Get<Configuration>();
         }
 
         [FunctionName("Function1")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req)
-        {
-            _log.LogInformation("Will do a get request to Function 2");
+        public async Task<IActionResult> Run([HttpTrigger(Microsoft.Azure.WebJobs.Extensions.Http.AuthorizationLevel.Function, "get", Route = null)] HttpRequest req) =>
+            await Execute(async () =>
+            {
+                Log.LogInformation("Will do a get request to Function 2");
+                Log.LogInformation(new AbandonedMutexException("Info 123"), "Information with exception");
 
-            var httpClient = _httpClientFactory.CreateClient();
+                Log.LogWarning("This is a warning test");
+                Log.LogWarning(new AbandonedMutexException("Warning 123"), "Warning with exception");
 
-            var requestTo2 = new HttpRequestMessage(HttpMethod.Get, _configuration.Function2Url)
-                {Headers = {{ICorrelationIdProvider.Header, _correlationIdProvider.CorrelationId}}};
+                Log.LogError(new AbandonedMutexException("Error 123"), "This is an exception error test");
+                Log.LogError("This is an error test");
 
-            var response = await httpClient.SendAsync(requestTo2);
+                var httpClient = _httpClientFactory.CreateClient();
 
-            _log.LogInformation("Did a get request to Function 2");
+                var requestTo2 = new HttpRequestMessage(HttpMethod.Get, _configuration.Function2Url)
+                {
+                    Headers = {{HttpRequestExtensions.Header, req.GetCorrelationId()}}
+                };
 
-            return new OkObjectResult($"GET request to 2: {(int) response.StatusCode}");
-        }
+                var response = await httpClient.SendAsync(requestTo2);
+
+                Log.LogInformation("Did a get request to Function 2");
+
+                return new OkObjectResult($"GET request to 2: {(int) response.StatusCode}");
+            }, req);
 
         private class Configuration
         {
             public string Function2Url { get; init; }
         }
     }
-
 }

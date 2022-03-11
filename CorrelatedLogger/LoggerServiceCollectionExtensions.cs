@@ -7,8 +7,7 @@ public static class LoggerServiceCollectionExtensions
 {
     public static IServiceCollection AddCorrelationDecoratedLogging(this IServiceCollection services)
     {
-        services.TryAdd(ServiceDescriptor.Scoped(typeof(IExtendedLogger<>), typeof(ExtendedLogger<>)));
-        services.AddScoped<ICorrelationIdProvider, CorrelationIdProvider>();
+        services.TryAdd(ServiceDescriptor.Scoped(typeof(ICorrelationIdDecoratedLogger<>), typeof(CorrelationIdDecoratedLogger<>)));
 
         return services;
     }
