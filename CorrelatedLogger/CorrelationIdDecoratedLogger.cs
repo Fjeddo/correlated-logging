@@ -1,40 +1,23 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace CorrelatedLogger;
 
-public class CorrelationIdDecoratedLogger<T> : ICorrelationIdDecoratedLogger<T>
+public class CorrelationIdDecoratedLogger<T> : ILogger<T>
 {
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ICorrelationIdProvider _correlationIdProvider;
+
+    private readonly ILogger _logger;
+
+    public CorrelationIdDecoratedLogger(ILoggerFactory factory, ICorrelationIdProvider correlationIdProvider)
+    {
+        _logger = factory.CreateLogger<T>();
+        _correlationIdProvider = correlationIdProvider;
+    }
     
-    private ILogger? _logger;
-    private ILogger Logger
-    {
-        get { return _logger ??= _loggerFactory.CreateLogger<T>(); }
-    }
-
-    private string? _correlationId;
-
-    public CorrelationIdDecoratedLogger(ILoggerFactory factory) => _loggerFactory = factory;
-
-    public void WithCorrelationId(string correlationId) => _correlationId = correlationId;
-
-    public async Task<TReturn> WithCorrelationId<TReturn>(string correlationId, Func<Task<TReturn>> func)
-    {
-        WithCorrelationId(correlationId);
-        return await func();
-    }
-
-    public ICorrelationIdDecoratedLogger<T> MakeSafe(IDurableOrchestrationContext context)
-    {
-        _logger = context.CreateReplaySafeLogger(Logger);
-        return this;
-    }
-
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter) =>
-        Logger.Log(logLevel, eventId, exception, $"{formatter(state, exception!)} (correlationId={{correlationId}})", _correlationId);
+        _logger.Log(logLevel, eventId, exception, $"{formatter(state, exception!)} (correlationId={{correlationId}})", _correlationIdProvider.CorrelationId);
 
-    public bool IsEnabled(LogLevel logLevel) => Logger.IsEnabled(logLevel);
+    public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
 
-    public IDisposable BeginScope<TState>(TState state) => Logger.BeginScope(state);
+    public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);
 }

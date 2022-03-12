@@ -12,7 +12,7 @@ namespace FunctionApp3
 {
     public class DurableFunction3 : LogCorrelatedFunctions<DurableFunction3>
     {
-        public DurableFunction3(ICorrelationIdDecoratedLogger<DurableFunction3> log) : base(log) { }
+        public DurableFunction3(ICorrelatedLoggingProvider<DurableFunction3> correlatedLoggingProvider) : base(correlatedLoggingProvider) { }
 
         [FunctionName("DurableFunction3")]
         public async Task<List<string>> RunOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context) =>
@@ -33,8 +33,8 @@ namespace FunctionApp3
             }, context);
 
         [FunctionName("DurableFunction3_Hello")]
-        public async Task<string> SayHello([ActivityTrigger] Input<string> input) =>
-            await Execute(async () =>
+        public string SayHello([ActivityTrigger] Input<string> input) =>
+            Execute(() =>
             {
                 Log.LogInformation($"Saying hello to {input.Data}.");
                 return $"Hello {input.Data}!";

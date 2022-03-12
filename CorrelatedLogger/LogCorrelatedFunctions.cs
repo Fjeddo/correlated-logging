@@ -1,15 +1,25 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 
 namespace CorrelatedLogger;
 
-public abstract class LogCorrelatedFunctions<TFunctions>
+public abstract class LogCorrelatedFunctions<T>
 {
-    protected readonly ICorrelationIdDecoratedLogger<TFunctions> Log;
-    
-    protected LogCorrelatedFunctions(ICorrelationIdDecoratedLogger<TFunctions> log) => Log = log;
+    protected ILogger Log { get; private set; }
+    protected ICorrelationIdProvider CorrelationIdProvider { get; }
 
-    protected async Task<TReturn> Execute<TReturn>(Func<Task<TReturn>> func, HttpRequest request) => await Log.WithCorrelationId(request.GetCorrelationId(), func);
-    protected async Task<TReturn> Execute<TReturn>(Func<Task<TReturn>> func, IDurableOrchestrationContext context) => await Log.MakeSafe(context).WithCorrelationId(context.GetCorrelationId(), func);
-    protected async Task<TReturn> Execute<TReturn>(Func<Task<TReturn>> func, Input input) => await Log.WithCorrelationId(input.GetCorrelationId(), func);
+    protected LogCorrelatedFunctions(ICorrelatedLoggingProvider<T> correlatedLoggingProvider)
+    {
+        Log = correlatedLoggingProvider.Log;
+        CorrelationIdProvider = correlatedLoggingProvider.CorrelationIdProvider;
+    }
+
+    protected TReturn Execute<TReturn>(Func<TReturn> func, HttpRequest request) => CorrelationIdProvider.ExecuteWithinContext(request, func);
+    protected TReturn Execute<TReturn>(Func<TReturn> func, Input input) => CorrelationIdProvider.ExecuteWithinContext(input, func);
+    protected TReturn Execute<TReturn>(Func<TReturn> func, IDurableOrchestrationContext context)
+    {
+        Log = context.CreateReplaySafeLogger(Log);
+        return CorrelationIdProvider.ExecuteWithinContext(context, func);
+    }
 }

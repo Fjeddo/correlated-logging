@@ -13,6 +13,7 @@ public class Startup : FunctionsStartup
         builder.Services
             .AddLogging()
             .AddCorrelationDecoratedLogging()
+            .AddScoped<ITestService, TestService>()
             .AddHttpContextAccessor();
     }
 }

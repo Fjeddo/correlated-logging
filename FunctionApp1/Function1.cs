@@ -13,11 +13,13 @@ namespace FunctionApp1
     public class Function1 : LogCorrelatedFunctions<Function1>
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ITestService _testService;
         private readonly Configuration _configuration;
 
-        public Function1(IHttpClientFactory httpClientFactory, ICorrelationIdDecoratedLogger<Function1> log, IConfiguration configuration) : base(log)
+        public Function1(IHttpClientFactory httpClientFactory, IConfiguration configuration, ITestService testService, ICorrelatedLoggingProvider<Function1> correlatedLoggingProvider) : base(correlatedLoggingProvider)
         {
             _httpClientFactory = httpClientFactory;
+            _testService = testService;
             _configuration = configuration.Get<Configuration>();
         }
 
@@ -25,6 +27,9 @@ namespace FunctionApp1
         public async Task<IActionResult> Run([HttpTrigger(Microsoft.Azure.WebJobs.Extensions.Http.AuthorizationLevel.Function, "get", Route = null)] HttpRequest req) =>
             await Execute(async () =>
             {
+                Log.LogTrace("Log trace test");
+                Log.LogDebug("Log debug test");
+
                 Log.LogInformation("Will do a get request to Function 2");
                 Log.LogInformation(new AbandonedMutexException("Info 123"), "Information with exception");
 
@@ -33,6 +38,8 @@ namespace FunctionApp1
 
                 Log.LogError(new AbandonedMutexException("Error 123"), "This is an exception error test");
                 Log.LogError("This is an error test");
+
+                _testService.TestLogger("Hello world!");
 
                 var httpClient = _httpClientFactory.CreateClient();
 

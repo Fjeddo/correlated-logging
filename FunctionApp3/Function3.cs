@@ -15,9 +15,9 @@ namespace FunctionApp3
         private readonly Configuration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public Function3(IConfiguration configuration, IHttpClientFactory httpClientFactory, ICorrelationIdDecoratedLogger<Function3> log) : base(log)
+        public Function3(IConfiguration configuration, IHttpClientFactory httpClientFactory, ICorrelatedLoggingProvider<Function3> correlatedLoggingProvider) : base(correlatedLoggingProvider)
         {
-            _configuration = configuration.Get<Configuration>(); ;
+            _configuration = configuration.Get<Configuration>();
             _httpClientFactory = httpClientFactory;
         }
 
