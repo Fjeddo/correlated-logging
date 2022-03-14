@@ -15,7 +15,7 @@ public class CorrelationIdDecoratedLogger<T> : ILogger<T>
     }
     
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter) =>
-        _logger.Log(logLevel, eventId, exception, $"{formatter(state, exception!)} (correlationId={{correlationId}})", _correlationIdProvider.CorrelationId);
+        _logger.Log(logLevel, eventId, exception, "{stateFormatter} (correlationId={correlationId})", formatter(state, exception!), _correlationIdProvider.CorrelationId);
 
     public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
 

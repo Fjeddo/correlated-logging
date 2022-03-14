@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace FunctionApp1
                 Log.LogTrace("Log trace test");
                 Log.LogDebug("Log debug test");
 
-                Log.LogInformation("Will do a get request to Function 2");
+                Log.LogInformation("Will do a get request to Function 2, {prop1}, {prop2}, {prop3}", DateTimeOffset.UtcNow, "test", 3);
                 Log.LogInformation(new AbandonedMutexException("Info 123"), "Information with exception");
 
                 Log.LogWarning("This is a warning test");
