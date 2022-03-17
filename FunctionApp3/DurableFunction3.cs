@@ -23,9 +23,9 @@ namespace FunctionApp3
                 var outputs = new List<string>
                 {
                     // Replace "hello" with the name of your Durable Activity Function.
-                    await context.CallActivityAsync<string>("DurableFunction3_Hello", Input.CreateInstance("Tokyo", context)),
-                    await context.CallActivityAsync<string>("DurableFunction3_Hello", Input.CreateInstance("Seattle", context)),
-                    await context.CallActivityAsync<string>("DurableFunction3_Hello", Input.CreateInstance("London", context))
+                    await context.CallActivityAsync<string>("DurableFunction3_Hello", Input.CreateInstance("Tokyo", CorrelationIdProvider)),
+                    await context.CallActivityAsync<string>("DurableFunction3_Hello", Input.CreateInstance("Seattle", CorrelationIdProvider)),
+                    await context.CallActivityAsync<string>("DurableFunction3_Hello", Input.CreateInstance("London", CorrelationIdProvider))
                 };
 
                 // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
@@ -45,7 +45,7 @@ namespace FunctionApp3
             await Execute(async () =>
             {
                 // Function input comes from the request content.
-                var instanceId = await starter.StartNewAsync("DurableFunction3", Input.CreateInstance(req));
+                var instanceId = await starter.StartNewAsync("DurableFunction3", Input.CreateInstance(CorrelationIdProvider));
 
                 Log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
 
