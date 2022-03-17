@@ -33,7 +33,7 @@ namespace FunctionApp3
                 Log.LogInformation("Function3 is about to start an orchestration, via http invocation");
 
                 var httpClient = _httpClientFactory.CreateClient();
-                await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, _configuration.OrchestrationStarterUrl) {Headers = {{CorrelatedLogger.ContextExtensions.Header, req.GetCorrelationId()}}});
+                await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, _configuration.OrchestrationStarterUrl) {Headers = {{ContextExtensions.Header, CorrelationIdProvider.CorrelationId}}});
 
                 return new OkObjectResult("Hello from Function3");
             }, req);

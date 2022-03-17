@@ -28,7 +28,7 @@ namespace FunctionApp2
 
                 var httpClient = _httpClientFactory.CreateClient();
                 var requestTo3 = new HttpRequestMessage(HttpMethod.Get, _configuration.Function3Url)
-                    {Headers = {{ContextExtensions.Header, req.GetCorrelationId() } }};
+                    {Headers = {{ContextExtensions.Header, CorrelationIdProvider.CorrelationId} }};
                 var response = await httpClient.SendAsync(requestTo3);
 
                 Log.LogInformation("Did a get request to Function 3");

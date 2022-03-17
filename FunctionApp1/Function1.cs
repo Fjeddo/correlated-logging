@@ -46,7 +46,7 @@ namespace FunctionApp1
 
                 var requestTo2 = new HttpRequestMessage(HttpMethod.Get, _configuration.Function2Url)
                 {
-                    Headers = {{ContextExtensions.Header, req.GetCorrelationId()}}
+                    Headers = {{ContextExtensions.Header, CorrelationIdProvider.CorrelationId}}
                 };
 
                 var response = await httpClient.SendAsync(requestTo2);
