@@ -14,14 +14,16 @@ public class CorrelationIdDecoratedLogger<T> : ILogger<T>
         _correlationIdProvider = correlationIdProvider;
     }
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter) =>
-        Log(logLevel,
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+        _logger.Log(
+            logLevel,
             eventId,
-            (state as IEnumerable<KeyValuePair<string, object>> ?? Array.Empty<KeyValuePair<string, object>>()).Append(new KeyValuePair<string, object>("correlationId", _correlationIdProvider.CorrelationId)),
+            AppendCorrelationId(state),
             exception,
             (_, e) => $"{formatter(state, e)} (correlationId={_correlationIdProvider.CorrelationId})".TrimStart());
 
-    private void Log(LogLevel logLevel, EventId eventId, IEnumerable<KeyValuePair<string, object>> state, Exception? exception, Func<IEnumerable<KeyValuePair<string, object>>, Exception, string> formatter) => _logger.Log(logLevel, eventId, state, exception, formatter!);
+    private IEnumerable<KeyValuePair<string, object>> AppendCorrelationId<TState>(TState state) => 
+        (state as IEnumerable<KeyValuePair<string, object>> ?? Array.Empty<KeyValuePair<string, object>>()).Append(new KeyValuePair<string, object>("correlationId", _correlationIdProvider.CorrelationId));
 
     public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
 
