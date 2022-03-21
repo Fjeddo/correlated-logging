@@ -12,5 +12,6 @@ This is a rough implementation of log correlation across service boundaries. The
    - Inject ILogger<> in other classes that need logging (it will be the correlation decorated implementation)
 
 ## Classes of interest:
-- The context extension classes, `ContextExtensions`
-- `Input<>` to be used in durable functions
+- The context extension classes, [`ContextExtensions`](CorrelatedLogger/ContextExtensions.cs)
+- [`Input<>`](CorrelatedLogger/Input.cs) to be used in durable functions
+- [`LogCorrelatedFunctions`](CorrelatedLogger/LogCorrelatedFunctions.cs)
