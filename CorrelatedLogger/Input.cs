@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-
-namespace CorrelatedLogger;
+﻿namespace CorrelatedLogger;
 
 public class Input<T> : Input
 {
